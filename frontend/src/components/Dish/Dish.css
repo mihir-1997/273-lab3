@@ -1,0 +1,33 @@
+.dish {
+    margin-top: 2%;
+    border-top: 1px lightgray solid;
+    padding-top: 2%;
+}
+
+.dishname {
+    color: #0073bb;
+    margin: 3px 0;
+    font-size: large
+}   
+
+.dishingredients {
+    color: gray;
+}
+
+.dishprice {
+    float: right;
+    font-weight: bold;
+}
+
+.dishimage {
+    height: 100%;
+    width: 80%;
+}
+
+.bold-writing {
+    font-weight: bold;
+}
+
+.orderbutton {
+    margin-top: 5px;
+}

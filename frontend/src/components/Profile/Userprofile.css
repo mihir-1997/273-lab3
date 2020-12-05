@@ -1,0 +1,120 @@
+.userprofile-wrapper {
+  margin-bottom: 2%;
+}
+
+.userprofile-firstrow {
+  margin-top: 1%;
+  padding-top: 4%;
+  background-color: #f5f5f5;
+  height: 280px;
+}
+
+.profile-picture-wrapper {
+    /* height: 35%; */
+}
+
+.profile-picture {
+    height: 250px;
+    width: 217px;
+    background-repeat: no-repeat;
+    /* background-image: url('../../Images/User_Logo.png'); */
+    position: absolute;
+    margin-left: 40px;
+    top: 22%;
+}
+
+.profile-picture-image {
+    color: transparent;
+    margin-left: 60px
+  }
+  .profile-picture-image::-webkit-file-upload-button {
+    visibility: hidden;
+  }
+  .profile-picture-image::before {
+    content: 'Change Profile Picture';
+    color: white;
+    display: inline-block;
+    background-color:  #f43939;
+    border: 1px solid #999;
+    border-radius: 3px;
+    padding: 5px 8px;
+    outline: none;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 10pt;
+  }
+  .profile-picture-image:hover::before {
+    border-color: black;
+  }
+  .profile-picture-image:active {
+    outline: 0;
+  }
+  .profile-picture-image:active::before {
+    background: -webkit-linear-gradient(top, #e3e3e3, #e3e3e3); 
+  }
+
+.profile_pic {
+    height: 100%;
+    width: 100%;
+    /* border-radius: 50%; */
+}
+
+.user-information {
+  padding: 10% 0 0 4%;
+}
+
+.username {
+    height: 40px;
+    font-size: xx-large;
+    font-weight: 700;
+    color: #f43939;
+}
+
+.userlocation {
+    color: gray;
+    font-size: medium;
+}
+
+.usersince {
+    color: #f43939;
+}
+
+.profile-picture-wrapper input[type="file"] {
+    margin-top: 10px;
+}
+
+.below-profile-picture {
+    height: 66%
+}
+
+.userphone:before {
+    content: "";
+    display: block;
+    background: url("../../Images/Telephone.svg") no-repeat;
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin: 0 6px 0 0;
+}
+
+.required-field {
+    color: red;
+}
+
+.userprofile-secondrow {
+  margin-top: 10%;
+}
+
+.userprofile-reviews {
+  padding: 0 0 0 5%
+}
+
+.about-username {
+  color: #f43939;
+}
+
+.userprofile-numofreviews {
+  margin: 7px 0;
+}

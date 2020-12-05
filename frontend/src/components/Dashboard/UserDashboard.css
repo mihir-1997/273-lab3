@@ -1,0 +1,62 @@
+.dashboard-wrapper {
+    margin: 2% 0;
+}
+
+.restaurant-search-bar {
+    padding-bottom: 2%;
+    border-bottom: 1px lightgray solid;
+}
+
+.below-restaurant-search-bar {
+    margin: 2% 2% 0;
+}
+
+.restaurant-search .form-group {
+    padding: 0px;
+}
+
+.searchOptions,
+.searchrestaurant{
+    height: 50px
+}
+
+.searchsubmit {
+    height: 50px;
+    width: 50px;
+    background-color: #f43939;
+}
+
+.filters-wrapper {
+    padding: 3% 20px 0 50px;
+    min-height: 80vh;
+    border-right: 1px lightgray solid;
+}
+
+.filters-heading{
+    border-bottom: 1px lightgray solid;
+}
+
+.filters-heading h5 {
+    width: 100%;
+    text-align: center;
+}
+
+.suggested-heading {
+    margin: 20px 0 0 20px;
+}
+
+.delivery_filters {
+    margin: 10px 0 0 20px;
+}
+
+.restaurants-wrapper {
+    padding: 2% 2% 0 2%;
+}
+
+.restaurants {
+    margin-top: 20px;
+}
+
+.maps-wrapper {
+    max-height: 80vh;
+}

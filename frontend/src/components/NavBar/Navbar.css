@@ -1,0 +1,38 @@
+nav {
+    background-color: #f43939;
+}
+
+nav a {
+    color: white;
+    font-weight: 500;
+    margin: 0 3px;
+    padding: 0 5px;
+    border-bottom: #f43939 2px solid;
+    transition: border-bottom 0.5s;
+}
+
+nav a:hover {
+    border-bottom: white 2px solid;
+    border-radius: 5%;
+}
+
+nav .logout-button {
+    margin-left: 20px;
+    background-color: #f43939;
+    border-radius: 5%;
+    border: none;
+    color: white;
+    width: 100px;
+    border: white 2px solid;
+    font-weight: 500;
+    transition: background-color 0.4s;
+}
+
+nav .logout-button:hover {
+    background-color: white;
+    color: black;
+}
+
+.navbar .navbar-nav>li>a:hover {
+    color: white;
+}

@@ -1,0 +1,56 @@
+.login h4,
+.register h4 {
+    /* text-align: center; */
+    margin: 5%;
+    color: #d32323
+}
+
+div.login, 
+div.register {
+    margin: 60% 0 0 12%;
+    /* width: 300px; */
+}
+
+div.login-logo {
+    margin: 30% 0 0 10%;
+    width: 500px;
+    height: 400px;
+}
+
+.login-logo-image {
+    height: 100%;
+    width: 100%;
+}
+
+div.login > form input,
+div.register > form input {
+    width: 80%;
+    height: 40px
+}
+
+div.login button,
+div.register button {
+    width: 80%;
+    margin-top: 5px
+}
+
+p {
+    margin-left: 15px;
+    color: red;
+}
+
+/* Radio Buttons */
+
+label {
+    margin: 0px 15px 15px 7px;
+}
+
+.login-button {
+    background-color: #d32323;
+    color:white;
+    font-weight: bold;
+}
+
+.login-button:hover {
+    color: white;
+}

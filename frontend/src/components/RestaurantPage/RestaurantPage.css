@@ -1,0 +1,165 @@
+.picture-scrolling-wrapper {
+    height: 250px;
+    width: 100%;
+    margin: 30px 0 0 0;
+}
+
+.picture-scrolling{
+    width: auto;
+    overflow: auto; 
+    white-space: nowrap;
+    height: 100%;
+}
+
+.restaurant-picture {
+    width: 380px;
+    height: 100%;
+    margin: 0px 3px; 
+}
+
+.shadow {
+    -moz-box-shadow:    inset 0 0 10px #000000;
+   -webkit-box-shadow: inset 0 0 10px #000000;
+   box-shadow:         inset 0 0 10px #000000;
+}
+
+.restaurantpage-information {
+    padding: 2% 2% 2% 8%;
+}
+
+.restaurant-info-wrapper {
+    padding-bottom: 20px;
+    border-bottom: 1px lightgray solid;
+}
+
+.menu-title {
+    margin-top: 3%
+}
+
+.restaurantratings:before {
+    content: "";
+    margin: 0;
+    display: None;
+}
+
+.restaurantratings:after{
+    content: "";
+    display: block;
+    background: url("../../Images/Star.png") no-repeat center;
+    width: 16px;
+    height: 16px;
+    float: left;
+    margin: 4px 0 0 4px;
+}
+
+.delivery-selection {
+    margin-top: 20px;
+}
+
+.select-delivery {
+    color: red;
+    margin-left: 15px;
+}
+
+.red-button {
+    background-color: #f43939;
+    color: white;
+}
+
+.red-button:hover {
+    color: white;
+} 
+
+.restaurantpage-name {
+    font-family: Poppins,Helvetica Neue,Helvetica,Arial,sans-serif;
+    font-weight: 900;
+    font-size: 48px;
+}
+
+.restaurant-name:hover {
+    text-decoration: underline;
+}
+
+.num-of-reviews {
+    color: gray;
+}
+
+.restaurant-ratings > span {
+    font-size: 24px;
+}
+
+.restaurant-ratings-mainpage > sapn {
+    font-size: 18px;
+}
+
+.checked {
+    color: orange;
+}
+
+.restaurant-delivery {
+    margin-top: 10px;
+}
+
+.restaurant-description {
+    margin-top: 5px;
+}
+
+.writereview-wrapper {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.contact-info-wrapper {
+    border: 1px solid #eeeeef;
+    padding: 30px 10px 40px 40px;
+}
+
+.contact-info {
+    font-family: Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    border-bottom: 1px solid #eeeeef;
+    padding: 10px 0 20px 0;
+}
+
+/* Snackbar for order confirmation */
+.toast {
+    visibility: hidden; 
+    min-width: 250px; 
+    margin-left: -125px; 
+    background-color: #4bb543; 
+    color: #fff; 
+    text-align: center; 
+    border-radius: 5px;
+    padding: 16px; 
+    position: fixed;
+    z-index: 1; 
+    left: 50%; 
+    bottom: 30px; 
+    font-size: large;
+}
+
+.toast.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations to fade the snackbar in and out */
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}

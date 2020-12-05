@@ -1,0 +1,24 @@
+.each-restaurant {
+    margin: 10px 2px;
+    padding: 10px 10px 10px 0px;
+    border: 1px #eeeeef solid;
+    min-height: 200px;
+    transition: box-shadow 0.3s;
+    transition: transform 0.2s;
+}
+
+.each-restaurant:hover {
+    box-shadow: 0 0 7px rgba(0,0,0,.1); 
+    transform: scale(1.02);
+    cursor: pointer;
+}
+
+.each-restaurant-image {
+    height: 150px;
+    width: 180px;
+}
+
+.contactinfo {
+    font-size: small;
+    text-align: right;
+}

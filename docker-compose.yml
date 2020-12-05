@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+    yelp-backend:
+        build: ./backend
+        expose:
+            - ${BACKEND_PORT}
+        environment:
+            FRONTEND_URL: ${FRONTEND_URL}
+            FRONTEND_PORT: ${FRONTEND_PORT}
+        ports:
+            - ${BACKEND_PORT}:${BACKEND_PORT}
+        command: npm start
+
+    yelp-frontend:
+        tty: true
+        build: ./frontend
+        expose:
+            - ${FRONTEND_PORT}
+        environment:
+            env_file: .env
+            REACT_APP_BACKEND_PORT: ${BACKEND_PORT}
+            REACT_APP_BACKEND_URL: ${BACKEND_URL}
+        ports:
+            - ${FRONTEND_PORT}:${FRONTEND_PORT}
+        links:
+            - yelp-backend

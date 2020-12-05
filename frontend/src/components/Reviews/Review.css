@@ -1,0 +1,33 @@
+.create-review-wrapper {
+    margin: 20px;
+    height: 250px;
+    width: 500px;
+}
+
+.create-review-heading {
+    margin-bottom: 20px;
+}
+
+.review-heading {
+    margin-bottom: 2%;
+    border-bottom: 1px lightgray solid;
+}
+
+.reviewdate,
+.reviewerlocation {
+    font-size: small;
+    color: gray;
+}
+
+.each-review-user {
+    margin-top: 15%;
+}
+
+.each-review-restaurant {
+    margin-top: 2%;
+}
+
+.reviewername,
+.review-restaurant-name {
+    font-family: Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+}
