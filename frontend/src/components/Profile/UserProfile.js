@@ -3,13 +3,15 @@ import './Userprofile.css'
 import axios from 'axios'
 import Popup from 'reactjs-popup';
 import { Redirect } from 'react-router';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import UpdateProfile from './UpdateUserProfile'
 import Reviews from '../Reviews/Reviews'
+import { GetUserQuery } from '../../queries/queries'
 import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
 const FormData = require( 'form-data' );
 
-export class UserProfile extends Component {
+class UserProfile extends Component {
 
     constructor( props ) {
         super( props )
@@ -43,37 +45,38 @@ export class UserProfile extends Component {
         }
         axios.defaults.withCredentials = true;
         if ( id ) {
-            axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/getuser/" + id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            id: res.data.id,
-                            name: res.data.name,
-                            email: res.data.email,
-                            phone_no: res.data.phone_no,
-                            nick_name: res.data.nick_name,
-                            birthdate: res.data.birthdate,
-                            city: res.data.city,
-                            state: res.data.state,
-                            country: res.data.country,
-                            website: res.data.website,
-                            headline: res.data.headline,
-                            profile_picture: res.data.profile_picture,
-                            yelping_since: res.data.yelping_since,
-                            things_love: res.data.things_love,
-                            find_me: res.data.find_me,
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( err.response.message )
-                        } else if ( err.response.status === 400 ) {
-                            console.log( err.response.message )
-                        }
-                    }
-                } )
+            this.props.client.query( {
+                query: GetUserQuery,
+                variables: {
+                    id: parseInt( id )
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        id: res.data.getUser.id,
+                        name: res.data.getUser.name,
+                        email: res.data.getUser.email,
+                        phone_no: res.data.getUser.phone_no,
+                        nick_name: res.data.getUser.nick_name,
+                        birthdate: res.data.getUser.birthdate,
+                        city: res.data.getUser.city,
+                        state: res.data.getUser.state,
+                        country: res.data.getUser.country,
+                        website: res.data.getUser.website,
+                        headline: res.data.getUser.headline,
+                        profile_picture: res.data.getUser.profile_picture,
+                        yelping_since: res.data.getUser.yelping_since,
+                        things_love: res.data.getUser.things_love,
+                        find_me: res.data.getUser.find_me,
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             console.log( "No Id found in local storage" )
         }
@@ -218,4 +221,8 @@ export class UserProfile extends Component {
     }
 }
 
-export default UserProfile
+export default compose(
+    withApollo,
+    graphql( GetUserQuery, { name: "GetRestaurant" } ),
+    // graphql( GetAvgRatingsQuery, { name: "GetAvgRatingsQuery" } ),
+)( UserProfile );

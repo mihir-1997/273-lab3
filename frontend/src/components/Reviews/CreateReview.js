@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
-import axios from 'axios'
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './Review.css'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { CreateReviewMutation } from '../../mutations/mutations'
 
-export default class CreateReview extends Component {
+class CreateReview extends Component {
     constructor( props ) {
         super( props )
         this.state = {
@@ -33,28 +33,25 @@ export default class CreateReview extends Component {
         } else {
             const reviewData = {
                 restaurant_id: this.state.restaurant_id,
-                user_id: localStorage.getItem( "id" ),
+                user_id: parseInt( localStorage.getItem( "id" ) ),
                 review_text: this.state.review_text,
-                ratings: this.state.ratings
+                ratings: parseInt( this.state.ratings )
             }
-            axios.defaults.withCredentials = true;
-            axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/createreview", reviewData )
-                .then( ( res ) => {
-                    console.log( res )
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            error: ""
-                        } )
-                        window.location.reload()
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        console.log( err.response )
-                        return
-                    }
-                    return
-                } )
+            this.props.CreateReviewMutation( {
+                variables: {
+                    ...reviewData
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    window.location.reload();
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         }
     }
 
@@ -90,3 +87,8 @@ export default class CreateReview extends Component {
         )
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( CreateReviewMutation, { name: "CreateReviewMutation" } ),
+)( CreateReview );

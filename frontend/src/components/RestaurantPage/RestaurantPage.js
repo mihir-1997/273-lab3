@@ -2,14 +2,17 @@ import React, { Component } from 'react'
 import axios from 'axios'
 import Popup from 'reactjs-popup';
 import { Redirect } from 'react-router';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './RestaurantPage.css'
 import Reviews from '../Reviews/Reviews'
 import Dishes from '../Dish/Dishes'
 import CreateReview from '../Reviews/CreateReview'
+import { GetRestaurant, GetAvgRatingsQuery } from '../../queries/queries'
+import { CreateOrderMutation } from '../../mutations/mutations'
 import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
 
-export default class RestaurantPage extends Component {
+class RestaurantPage extends Component {
 
     constructor( props ) {
         super( props )
@@ -39,53 +42,55 @@ export default class RestaurantPage extends Component {
         axios.defaults.withCredentials = true;
         let id = localStorage.getItem( "id" )
         if ( id && this.props.location.state.id ) {
-            axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/getrestaurant/" + this.props.location.state.id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            name: res.data.name,
-                            email: res.data.email,
-                            phone_no: res.data.phone_no,
-                            address: res.data.address,
-                            city: res.data.city,
-                            state: res.data.state,
-                            zipcode: res.data.zipcode,
-                            description: res.data.description,
-                            curbside_pickup: res.data.curbside_pickup === 1 ? true : false,
-                            delivery: res.data.delivery === 1 ? true : false,
-                            dine_in: res.data.dine_in === 1 ? true : false,
-                            timings: res.data.timings,
-                            pictures: res.data.pictures
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( err.response.message )
-                        } else if ( err.response.status === 400 ) {
-                            console.log( err.response.message )
-                        }
-                    }
-                } )
-            axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/averageRatingsForRestaurant/" + this.props.location.state.id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            avgRatings: res.data.ratings,
-                            num_of_reviews: res.data.num_of_reviews
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( err.response.message )
-                        } else if ( err.response.status === 400 ) {
-                            console.log( err.response.message )
-                        }
-                    }
-                } )
+            this.props.client.query( {
+                query: GetRestaurant,
+                variables: {
+                    id: this.props.location.state.id
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        name: res.data.getRestaurant.name,
+                        email: res.data.getRestaurant.email,
+                        phone_no: res.data.getRestaurant.phone_no,
+                        address: res.data.getRestaurant.address,
+                        city: res.data.getRestaurant.city,
+                        state: res.data.getRestaurant.state,
+                        zipcode: res.data.getRestaurant.zipcode,
+                        description: res.data.getRestaurant.description,
+                        curbside_pickup: res.data.getRestaurant.curbside_pickup === 1 ? true : false,
+                        delivery: res.data.getRestaurant.delivery === 1 ? true : false,
+                        dine_in: res.data.getRestaurant.dine_in === 1 ? true : false,
+                        timings: res.data.getRestaurant.timings,
+                        pictures: res.data.getRestaurant.pictures
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
+            this.props.client.query( {
+                query: GetAvgRatingsQuery,
+                variables: {
+                    restaurant_id: this.props.location.state.id
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        avgRatings: res.data.getAvgRatings.ratings,
+                        num_of_reviews: res.data.getAvgRatings.num_of_reviews
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             console.log( "No Id found in local storage" )
         }
@@ -97,33 +102,35 @@ export default class RestaurantPage extends Component {
                 error: ""
             } )
             const orderData = {
-                restaurant_id: this.props.location.state.id,
-                user_id: localStorage.getItem( "id" ),
-                dish_id: dishId,
-                total: dishPrice,
+                restaurant_id: parseInt( this.props.location.state.id ),
+                user_id: parseInt( localStorage.getItem( "id" ) ),
+                dish_id: parseInt( dishId ),
+                total: parseFloat( dishPrice ),
+                status: "Ordered",
                 delivery_option: this.state.deliveryOption
             }
-            axios.defaults.withCredentials = true;
-            axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/createOrder", orderData )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            error: ""
-                        } )
-                        var toast = document.getElementById( "toast" )
-                        toast.classList.add( "show" )
-                        setTimeout( () => {
-                            toast.classList.remove( "show" )
-                        }, 3000 );
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        console.log( err.response )
-                        return
-                    }
-                    return
-                } )
+            this.props.CreateOrderMutation( {
+                variables: {
+                    ...orderData
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        error: ""
+                    } )
+                    var toast = document.getElementById( "toast" )
+                    toast.classList.add( "show" )
+                    setTimeout( () => {
+                        toast.classList.remove( "show" )
+                    }, 3000 );
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             this.setState( {
                 error: "Please select delivery option"
@@ -238,7 +245,7 @@ export default class RestaurantPage extends Component {
                                         </div>
                                         <span className="select-delivery">{ this.state.error }</span>
                                     </form>
-                                    <Dishes id={ this.props.location.state.id } radioShow={ false } orderButton={ this.state.curbside_pickup || this.state.delivery } onOrder={ this.onOrder }></Dishes>
+                                    <Dishes key={ Math.random() } id={ this.props.location.state.id } radioShow={ false } orderButton={ this.state.curbside_pickup || this.state.delivery } onOrder={ this.onOrder }></Dishes>
                                 </div>
                             </div>
                             <div className="col-2">
@@ -254,3 +261,10 @@ export default class RestaurantPage extends Component {
         )
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( GetRestaurant, { name: "GetRestaurant" } ),
+    graphql( GetAvgRatingsQuery, { name: "GetAvgRatingsQuery" } ),
+    graphql( CreateOrderMutation, { name: "CreateOrderMutation" } ),
+)( RestaurantPage );

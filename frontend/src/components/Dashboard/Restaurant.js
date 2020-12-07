@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
-import axios from 'axios';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './Restaurant.css'
 import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { GetAvgRatingsQuery } from '../../queries/queries'
 
 class Restaurant extends Component {
 
@@ -15,26 +16,26 @@ class Restaurant extends Component {
     }
 
     componentDidMount () {
-        console.log( process.env.REACT_APP_BACKEND_PORT )
         if ( this.props.restautantData.id ) {
-            axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/averageRatingsForRestaurant/" + this.props.restautantData.id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            avgRatings: res.data.ratings,
-                            num_of_reviews: res.data.num_of_reviews
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( err.response.message )
-                        } else if ( err.response.status === 400 ) {
-                            console.log( err.response.message )
-                        }
-                    }
-                } )
+            this.props.client.query( {
+                query: GetAvgRatingsQuery,
+                variables: {
+                    restaurant_id: this.props.restautantData.id
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        avgRatings: res.data.getAvgRatings.ratings,
+                        num_of_reviews: res.data.getAvgRatings.num_of_reviews
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         }
     }
 
@@ -105,15 +106,16 @@ class Restaurant extends Component {
                     </div>
                 </div>
                 <div className="col-2 contactinfo">
-                    {/* { this.props.restautantData.email }<br /> */ }
                     { this.props.restautantData.phone_no }<br />
                     { this.props.restautantData.address }<br />
                     { this.props.restautantData.city }<br />
-                    {/* { this.props.restautantData.timings } */ }
                 </div>
             </div>
         )
     }
 }
 
-export default Restaurant;
+export default compose(
+    withApollo,
+    graphql( GetAvgRatingsQuery, { name: "GetAvgRatingsQuery" } )
+)( Restaurant );

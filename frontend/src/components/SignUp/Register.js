@@ -1,11 +1,13 @@
 import React, { Component } from 'react'
 import axios from 'axios'
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import Login_logo from "../../Images/Login_logo.png"
 import './Signup.css'
+import { AddUserMutation, AddRestaurantMutation } from '../../mutations/mutations'
 import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
 
-export class register extends Component {
+class register extends Component {
 
     constructor( props ) {
         super( props )
@@ -69,26 +71,44 @@ export class register extends Component {
                         email: this.state.email,
                         password: this.state.password,
                     }
-                    axios.defaults.withCredentials = true;
-                    axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/registerUser", user )
-                        .then( ( res ) => {
-                            if ( res.status === 200 ) {
-                                console.log( "User added successfully" )
-                                this.setState( {
-                                    error: ""
-                                } )
-                                window.location.assign( '/login' )
-                            } else {
-                                console.log( "Error creating user" )
-                            }
-                        } )
-                        .catch( ( err ) => {
-                            if ( err.response ) {
-                                if ( err.response.status === 409 ) {
-                                    this.setState( { "error": "User already exist" } )
-                                }
-                            }
-                        } )
+                    this.props.AddUserMutation( {
+                        variables: {
+                            ...user
+                        }
+                    } ).then( res => {
+                        if ( res.data ) {
+                            this.setState( {
+                                error: ""
+                            } )
+                            window.location.assign( '/login' )
+                        }
+                    } ).catch( err => {
+                        if ( err.message ) {
+                            this.setState( {
+                                error: err.message.split( ":" )[ 1 ]
+                            } )
+                        }
+                    } )
+                    // axios.defaults.withCredentials = true;
+                    // axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/registerUser", user )
+                    //     .then( ( res ) => {
+                    //         if ( res.status === 200 ) {
+                    //             console.log( "User added successfully" )
+                    //             this.setState( {
+                    //                 error: ""
+                    //             } )
+                    //             window.location.assign( '/login' )
+                    //         } else {
+                    //             console.log( "Error creating user" )
+                    //         }
+                    //     } )
+                    //     .catch( ( err ) => {
+                    //         if ( err.response ) {
+                    //             if ( err.response.status === 409 ) {
+                    //                 this.setState( { "error": "User already exist" } )
+                    //             }
+                    //         }
+                    //     } )
                 } else {
                     this.setState( {
                         error: "*Some required fields are empty"
@@ -105,23 +125,41 @@ export class register extends Component {
                         zipcode: this.state.zipcode,
                         password: this.state.password,
                     }
-                    axios.defaults.withCredentials = true;
-                    axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/registerRestaurant", restaurant )
-                        .then( ( res ) => {
-                            if ( res.status === 200 ) {
-                                console.log( "Restaurant added successfully" )
-                                window.location.assign( '/login' )
-                            } else {
-                                console.log( "Error creating restaurant" )
-                            }
-                        } )
-                        .catch( ( err ) => {
-                            if ( err.response ) {
-                                if ( err.response.status === 409 ) {
-                                    this.setState( { "error": "Restaurant already exist" } )
-                                }
-                            }
-                        } )
+                    this.props.AddRestaurantMutation( {
+                        variables: {
+                            ...restaurant
+                        }
+                    } ).then( res => {
+                        if ( res.data ) {
+                            this.setState( {
+                                error: ""
+                            } )
+                            window.location.assign( '/login' )
+                        }
+                    } ).catch( err => {
+                        if ( err.message ) {
+                            this.setState( {
+                                error: err.message.split( ":" )[ 1 ]
+                            } )
+                        }
+                    } )
+                    // axios.defaults.withCredentials = true;
+                    // axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/registerRestaurant", restaurant )
+                    //     .then( ( res ) => {
+                    //         if ( res.status === 200 ) {
+                    //             console.log( "Restaurant added successfully" )
+                    //             window.location.assign( '/login' )
+                    //         } else {
+                    //             console.log( "Error creating restaurant" )
+                    //         }
+                    //     } )
+                    //     .catch( ( err ) => {
+                    //         if ( err.response ) {
+                    //             if ( err.response.status === 409 ) {
+                    //                 this.setState( { "error": "Restaurant already exist" } )
+                    //             }
+                    //         }
+                    //     } )
                 } else {
                     this.setState( {
                         error: "*Some required fields are empty"
@@ -262,4 +300,8 @@ export class register extends Component {
     }
 }
 
-export default register
+export default compose(
+    withApollo,
+    graphql( AddUserMutation, { name: "AddUserMutation" } ),
+    graphql( AddRestaurantMutation, { name: "AddRestaurantMutation" } ),
+)( register );

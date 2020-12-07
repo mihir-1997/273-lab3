@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
-import axios from 'axios'
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './AddDish.css'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { AddDishMutation } from '../../mutations/mutations'
 
-export default class AddDish extends Component {
+class AddDish extends Component {
 
     constructor( props ) {
         super( props )
@@ -32,39 +32,27 @@ export default class AddDish extends Component {
         item.preventDefault()
         if ( this.state.name && this.state.price && this.state.category ) {
             let id = localStorage.getItem( "id" )
-            console.log( this.state.image )
-            const formData = new FormData()
-            formData.append( 'restaurant_id', id )
-            formData.append( 'file', this.state.image )
-            formData.append( 'name', this.state.name )
-            formData.append( 'ingredients', this.state.ingredients )
-            formData.append( 'description', this.state.description )
-            formData.append( 'cuisine', this.state.cuisine )
-            formData.append( 'price', this.state.price )
-            formData.append( 'category', this.state.category )
-            const config = {
-                headers: {
-                    'content-type': 'multipart/form-data'
+            this.props.AddDishMutation( {
+                variables: {
+                    restaurant_id: parseInt( id ),
+                    name: this.state.name,
+                    ingredients: this.state.ingredients,
+                    price: parseFloat( this.state.price ),
+                    description: this.state.description,
+                    category: this.state.category,
+                    cuisine: this.state.cuisine,
                 }
-            }
-            axios.defaults.withCredentials = true;
-            axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/createDish/", formData, config )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        console.log( "Dish created successfully" )
-                        this.setState( {
-                            error: ""
-                        } )
-                        window.location.reload();
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        console.log( err.response )
-                    } else {
-                        console.log( err )
-                    }
-                } )
+            } ).then( res => {
+                if ( res.data ) {
+                    window.location.reload();
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             this.setState( {
                 error: "*Some required fields are empty"
@@ -145,3 +133,8 @@ export default class AddDish extends Component {
         )
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( AddDishMutation, { name: "AddDishMutation" } ),
+)( AddDish );

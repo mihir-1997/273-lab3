@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
-import axios from 'axios'
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './UpdateUserProfile.css'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { UpdateUserMutation } from '../../mutations/mutations'
 
-export default class UpdateProfile extends Component {
+class UpdateProfile extends Component {
 
     constructor( props ) {
         super( props )
@@ -23,6 +23,7 @@ export default class UpdateProfile extends Component {
         console.log( "update" )
         if ( this.state.error === "" ) {
             const user = {
+                id: parseInt( localStorage.getItem( "id" ) ),
                 name: this.state.name,
                 email: this.state.email,
                 phone_no: this.state.phone_no,
@@ -38,25 +39,23 @@ export default class UpdateProfile extends Component {
                 things_love: this.state.things_love,
                 find_me: this.state.find_me,
             }
-            let id = localStorage.getItem( "id" )
-            axios.defaults.withCredentials = true;
-            console.log( "updfate 2" )
-            axios.put( BACKEND_URL + ":" + BACKEND_PORT + "/updateUser/" + id, user )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        localStorage.setItem( "email", res.data.email )
-                        console.log( "Profile updated successfully" )
-                        window.location.reload();
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( "Error! No user" )
-                            this.setState( { "error": "No user found" } )
-                        }
-                    }
-                } )
+            this.props.UpdateUserMutation( {
+                variables: {
+                    ...user
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    localStorage.setItem( "email", res.data.updateUser.email )
+                    console.log( "Profile updated successfully" )
+                    window.location.reload();
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         }
     }
 
@@ -173,3 +172,8 @@ export default class UpdateProfile extends Component {
         )
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( UpdateUserMutation, { name: "UpdateUserMutation" } )
+)( UpdateProfile );

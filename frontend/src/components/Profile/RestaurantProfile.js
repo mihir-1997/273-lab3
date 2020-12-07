@@ -2,15 +2,17 @@ import React, { Component } from 'react'
 import axios from 'axios'
 import Popup from 'reactjs-popup';
 import { Redirect } from 'react-router';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import UpdateRestaurant from './UpdateRestaurant'
 import Dishes from '../Dish/Dishes'
 import AddDish from '../Dish/AddDish'
 import './RestaurantProfile.css'
 import Reviews from '../Reviews/Reviews'
+import { GetRestaurant, GetAvgRatingsQuery } from '../../queries/queries'
 import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
 
-export default class RestaurantProfile extends Component {
+class RestaurantProfile extends Component {
 
     constructor( props ) {
         super( props )
@@ -37,56 +39,55 @@ export default class RestaurantProfile extends Component {
         axios.defaults.withCredentials = true;
         let id = localStorage.getItem( "id" )
         if ( id ) {
-            axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/getrestaurant/" + id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        console.log( res.data )
-                        this.setState( {
-                            name: res.data.name,
-                            email: res.data.email,
-                            phone_no: res.data.phone_no,
-                            address: res.data.address,
-                            city: res.data.city,
-                            state: res.data.state,
-                            zipcode: res.data.zipcode,
-                            latitude: res.data.latitude,
-                            longitude: res.data.longitude,
-                            description: res.data.description,
-                            timings: res.data.timings,
-                            curbside_pickup: res.data.curbside_pickup,
-                            dine_in: res.data.dine_in,
-                            delivery: res.data.delivery,
-                            pictures: res.data.pictures
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( err.response.message )
-                        } else if ( err.response.status === 400 ) {
-                            console.log( err.response.message )
-                        }
-                    }
-                } )
-            axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/averageRatingsForRestaurant/" + id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            avgRatings: res.data.ratings,
-                            num_of_reviews: res.data.num_of_reviews
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( err.response.message )
-                        } else if ( err.response.status === 400 ) {
-                            console.log( err.response.message )
-                        }
-                    }
-                } )
+            this.props.client.query( {
+                query: GetRestaurant,
+                variables: {
+                    id: parseInt( id )
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        name: res.data.getRestaurant.name,
+                        email: res.data.getRestaurant.email,
+                        phone_no: res.data.getRestaurant.phone_no,
+                        address: res.data.getRestaurant.address,
+                        city: res.data.getRestaurant.city,
+                        state: res.data.getRestaurant.state,
+                        zipcode: res.data.getRestaurant.zipcode,
+                        description: res.data.getRestaurant.description,
+                        curbside_pickup: res.data.getRestaurant.curbside_pickup === 1 ? true : false,
+                        delivery: res.data.getRestaurant.delivery === 1 ? true : false,
+                        dine_in: res.data.getRestaurant.dine_in === 1 ? true : false,
+                        timings: res.data.getRestaurant.timings,
+                        pictures: res.data.getRestaurant.pictures
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
+            this.props.client.query( {
+                query: GetAvgRatingsQuery,
+                variables: {
+                    restaurant_id: parseInt( id )
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        avgRatings: res.data.getAvgRatings.ratings,
+                        num_of_reviews: res.data.getAvgRatings.num_of_reviews
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             console.log( "No Id found in local storage" )
         }
@@ -265,12 +266,12 @@ export default class RestaurantProfile extends Component {
                                     {/* <div className="col-4"></div> */ }
                                 </div>
                                 {/* <div className="row dishes"> */ }
-                                <Dishes id={ localStorage.getItem( "id" ) } radioShow={ this.state.radioShow } orderButton={ false }></Dishes>
+                                <Dishes id={ parseInt( localStorage.getItem( "id" ) ) } radioShow={ this.state.radioShow } orderButton={ false }></Dishes>
                                 {/* </div> */ }
                             </div>
                             <div className="col-2">
                                 <div className="row">
-                                    <Reviews id={ localStorage.getItem( "id" ) } active={ localStorage.getItem( "active" ) } />
+                                    <Reviews id={ parseInt( localStorage.getItem( "id" ) ) } active={ localStorage.getItem( "active" ) } />
                                 </div>
                             </div>
                         </div>
@@ -288,3 +289,9 @@ export default class RestaurantProfile extends Component {
         margin: "30px 20px 20px 20px"
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( GetRestaurant, { name: "GetRestaurant" } ),
+    graphql( GetAvgRatingsQuery, { name: "GetAvgRatingsQuery" } ),
+)( RestaurantProfile );

@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
-import axios from 'axios'
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './UpdateUserProfile.css'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { UpdateRestaurantMutation } from '../../mutations/mutations'
 
-export default class UpdateRestaurant extends Component {
+class UpdateRestaurant extends Component {
 
     constructor( props ) {
         super( props )
@@ -37,40 +37,37 @@ export default class UpdateRestaurant extends Component {
         item.preventDefault()
         if ( this.state.email && this.state.address && this.state.city && this.state.state && this.state.zipcode ) {
             const restaurant = {
+                id: parseInt( localStorage.getItem( "id" ) ),
                 name: this.state.name,
                 email: this.state.email,
                 phone_no: this.state.phone_no,
                 address: this.state.address,
                 city: this.state.city,
                 state: this.state.state,
-                zipcode: this.state.zipcode,
+                zipcode: parseInt( this.state.zipcode ),
                 description: this.state.description,
                 timings: this.state.timings,
-                curbside_pickup: this.state.curbside_pickup,
-                dine_in: this.state.dine_in,
-                delivery: this.state.delivery
+                curbside_pickup: this.state.curbside_pickup ? 1 : 0,
+                dine_in: this.state.dine_in ? 1 : 0,
+                delivery: this.state.delivery ? 1 : 0
             }
-            let id = localStorage.getItem( "id" )
-            axios.defaults.withCredentials = true;
-            axios.put( BACKEND_URL + ":" + BACKEND_PORT + "/updateRestaurant/" + id, restaurant )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        localStorage.setItem( "email", res.data.email )
-                        console.log( "Profile updated successfully" )
-                        this.setState( {
-                            error: ""
-                        } )
-                        window.location.reload();
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( "Error! No restaurant" )
-                            this.setState( { "error": "No restaurant found" } )
-                        }
-                    }
-                } )
+            this.props.UpdateRestaurantMutation( {
+                variables: {
+                    ...restaurant
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    localStorage.setItem( "email", res.data.updateRestaurant.email )
+                    console.log( "Profile updated successfully" )
+                    window.location.reload();
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             this.setState( {
                 error: "*Some required fields are empty"
@@ -164,3 +161,8 @@ export default class UpdateRestaurant extends Component {
         )
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( UpdateRestaurantMutation, { name: "UpdateRestaurantMutation" } )
+)( UpdateRestaurant );

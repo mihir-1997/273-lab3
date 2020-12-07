@@ -9,19 +9,23 @@ export default class Review extends Component {
             restaurant_id: this.props.review.restaurant_id,
             review_text: this.props.review.review_text,
             ratings: this.props.review.ratings,
-            date: this.props.review.date.split( "T" )[ 0 ],
-            restaurant_name: this.props.review.name,
+            date: this.props.review.date,
+            restaurant_name: this.props.review.restaurants_name,
             restaurant_address: this.props.review.restaurant_address,
             restaurant_city: this.props.review.restaurant_city,
             restaurant_state: this.props.review.restaurant_state,
             restaurant_zipcode: this.props.review.restaurant_zipcode,
-            user_name: this.props.review.name,
-            user_city: this.props.review.city,
-            user_state: this.props.review.state,
+            user_name: this.props.review.user_name,
+            user_city: this.props.review.user_city,
+            user_state: this.props.review.user_state,
             active: this.props.active
         }
     }
     render () {
+        let getDate = () => {
+            let date = new Date( parseInt( this.state.date ) )
+            return date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear()
+        }
         var EachReview = null
         let ratings = () => {
             ratings = parseInt( this.state.ratings )
@@ -41,7 +45,7 @@ export default class Review extends Component {
                         <div className="col">
                             <h4 className="review-restaurant-name">{ this.state.restaurant_name }</h4>
                             { this.state.restaurant_address }, { this.state.restaurant_city }, { this.state.restaurant_state } { this.state.restaurant_zipcode }<br />
-                            { ratings() }&nbsp;<span className="reviewdate">{ this.state.date }</span><br />
+                            { ratings() }&nbsp;<span className="reviewdate">{ getDate() }</span><br />
                             { this.state.review_text }
                         </div>
                     </div>
@@ -53,7 +57,7 @@ export default class Review extends Component {
                     <div className="row each-review-user">
                         <div className="col">
                             <h4 className="reviewername">{ this.state.user_name }</h4>
-                            { ratings() }&nbsp;<span className="reviewdate">{ this.state.date }</span><br />
+                            { ratings() }&nbsp;<span className="reviewdate">{ getDate() }</span><br />
                             <span className="reviewerlocation">{ this.state.user_city },{ this.state.user_state }</span><br />
                             { this.state.review_text }
                         </div>

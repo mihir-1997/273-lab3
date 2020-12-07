@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
-import axios from 'axios'
 import { Redirect } from 'react-router';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './Orders.css'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { GetOrdersForUserQuery } from '../../queries/queries'
 
-export default class Orders extends Component {
+class Orders extends Component {
 
     constructor( props ) {
         super( props )
@@ -26,22 +26,25 @@ export default class Orders extends Component {
     componentDidMount () {
         let id = localStorage.getItem( "id" )
         if ( id ) {
-            return axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/getUserOrders/" + id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            orders: res.data,
-                            filtered_orders: res.data
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        console.log( err.response.message )
-                        return
-                    }
-                    return
-                } )
+            this.props.client.query( {
+                query: GetOrdersForUserQuery,
+                variables: {
+                    user_id: parseInt( id )
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        orders: res.data.getOrdersForUsers,
+                        filtered_orders: res.data.getOrdersForUsers
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             console.log( "No Id found in local storage" )
         }
@@ -52,6 +55,24 @@ export default class Orders extends Component {
             filtered_orders: this.state.filtered_orders.filter( order => order.status === this.state.filtered )
         } )
 
+    }
+
+    onChange = ( e ) => {
+        if ( e.target.value ) {
+            if ( e.target.value === "ascending" ) {
+                this.setState( {
+                    filtered_orders: this.state.filtered_orders.sort( ( a, b ) => {
+                        return new Date( parseInt( a.order_date ) ) - new Date( parseInt( b.order_date ) )
+                    } )
+                } )
+            } else {
+                this.setState( {
+                    filtered_orders: this.state.filtered_orders.sort( ( a, b ) => {
+                        return new Date( parseInt( b.order_date ) ) - new Date( parseInt( a.order_date ) )
+                    } )
+                } )
+            }
+        }
     }
 
     onChangeFilter = ( item ) => {
@@ -116,6 +137,10 @@ export default class Orders extends Component {
             redirectVar = <Redirect to="/login" />
             return redirectVar
         }
+        let getDate = ( old ) => {
+            let date = new Date( parseInt( old ) )
+            return date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear()
+        }
         return (
             <div >
                 {redirectVar }
@@ -138,6 +163,15 @@ export default class Orders extends Component {
                         </div>
                         <div className="col-10">
                             <h2 className="order-heading">Orders</h2>
+                            <div className="">
+                                <form>
+                                    <select name="sortOption" id="sortOptions" className="form-control sortOptions" onChange={ this.onChange }>
+                                        <option name="sort" value="">Sort By Date...</option>
+                                        <option name="sort" value="ascending">Ascending</option>
+                                        <option name="sort" value="descending">Descending</option>
+                                    </select>
+                                </form>
+                            </div>
                             {
                                 this.state.filtered_orders ?
                                     this.state.filtered_orders.map( ( order, index ) => {
@@ -166,7 +200,7 @@ export default class Orders extends Component {
                                                             <span className="order-details">{ order.status }</span>
                                                         </div>
                                                         <div className="col-3">
-                                                            <span className="order-details">{ order.order_date.split( "T" )[ 0 ] }</span>
+                                                            <span className="order-details">{ getDate( order.order_date ) }</span>
                                                         </div>
                                                         <div className="col-2">
                                                             <span className="order-details">{ order.dish_name }</span>
@@ -191,3 +225,8 @@ export default class Orders extends Component {
         )
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( GetOrdersForUserQuery, { name: "GetOrdersForUserQuery" } ),
+)( Orders );

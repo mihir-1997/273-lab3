@@ -1,12 +1,15 @@
 import React, { Component } from 'react'
-import axios from 'axios'
 import { Redirect } from 'react-router';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import Login_logo from "../../Images/Login_logo.png"
 import './Signup.css'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
 
-export class Login extends Component {
+import { UserLoginQuery, RestaurantLoginQuery } from '../../queries/queries'
+
+
+
+class Login extends Component {
 
     constructor( props ) {
         super( props )
@@ -59,61 +62,51 @@ export class Login extends Component {
                 } )
             }
             if ( this.state.selected === "user" ) {
-                const user = {
-                    email: this.state.email,
-                    password: this.state.password,
-                }
-                axios.defaults.withCredentials = true;
-                axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/loginUser", user )
-                    .then( ( res ) => {
-                        if ( res.status === 200 ) {
-                            localStorage.setItem( "email", res.data.email )
-                            localStorage.setItem( "id", res.data.id )
-                            localStorage.setItem( "active", "user" )
-                            console.log( "User Loggedin successfully" )
-                            window.location.assign( '/userdashboard' )
-                        }
-                    } )
-                    .catch( ( err ) => {
-                        if ( err.response ) {
-                            if ( err.response.status === 404 ) {
-                                console.log( "Error! No user" )
-                                this.setState( { "error": "No user found" } )
-                            } else if ( err.response.status === 401 ) {
-                                this.setState( { "error": "Wrong Password" } )
-                            } else if ( err.response.status === 400 ) {
-                                this.setState( { "error": "Each field is required" } )
-                            }
-                        }
-                    } )
+                this.props.client.query( {
+                    query: UserLoginQuery,
+                    variables: {
+                        email: this.state.email,
+                        password: this.state.password,
+                    }
+                } ).then( res => {
+                    console.log( res.data )
+                    if ( res.data ) {
+                        localStorage.setItem( "email", res.data.loginUser.email )
+                        localStorage.setItem( "id", res.data.loginUser.id )
+                        localStorage.setItem( "active", "user" )
+                        console.log( "User Loggedin successfully" )
+                        window.location.assign( '/userdashboard' )
+                    }
+                } ).catch( err => {
+                    if ( err.message ) {
+                        this.setState( {
+                            error: err.message.split( ":" )[ 1 ]
+                        } )
+                    }
+                } )
             } else {
-                const restaurant = {
-                    email: this.state.email,
-                    password: this.state.password,
-                }
-                axios.defaults.withCredentials = true;
-                axios.post( BACKEND_URL + ":" + BACKEND_PORT + "/loginRestaurant", restaurant )
-                    .then( ( res ) => {
-                        if ( res.status === 200 ) {
-                            localStorage.setItem( "email", res.data.email )
-                            localStorage.setItem( "id", res.data.id )
-                            localStorage.setItem( "active", "restaurant" )
-                            console.log( "Restaurant Loggedin successfully" )
-                            window.location.assign( '/restaurantprofile' )
-                        }
-                    } )
-                    .catch( ( err ) => {
-                        if ( err.response ) {
-                            if ( err.response.status === 404 ) {
-                                console.log( "Error! No restaurant" )
-                                this.setState( { "error": "No restaurant found" } )
-                            } else if ( err.response.status === 401 ) {
-                                this.setState( { "error": "Wrong Password" } )
-                            } else if ( err.response.status === 400 ) {
-                                this.setState( { "error": "Each field is required" } )
-                            }
-                        }
-                    } )
+                this.props.client.query( {
+                    query: RestaurantLoginQuery,
+                    variables: {
+                        email: this.state.email,
+                        password: this.state.password,
+                    }
+                } ).then( res => {
+                    console.log( res.data )
+                    if ( res.data ) {
+                        localStorage.setItem( "email", res.data.loginRestaurant.email )
+                        localStorage.setItem( "id", res.data.loginRestaurant.id )
+                        localStorage.setItem( "active", "restaurant" )
+                        console.log( "User Loggedin successfully" )
+                        window.location.assign( '/restaurantprofile' )
+                    }
+                } ).catch( err => {
+                    if ( err.message ) {
+                        this.setState( {
+                            error: err.message.split( ":" )[ 1 ]
+                        } )
+                    }
+                } )
             }
         } else {
             this.setState( {
@@ -206,4 +199,8 @@ export class Login extends Component {
     }
 }
 
-export default Login
+export default compose(
+    withApollo,
+    graphql( UserLoginQuery, { name: "UserLoginQuery" } ),
+    graphql( RestaurantLoginQuery, { name: "RestaurantLoginQuery" } ),
+)( Login );

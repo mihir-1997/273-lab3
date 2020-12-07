@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import axios from 'axios'
 import { Redirect } from 'react-router';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './Orders.css'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { GetOrdersForRestaurantQuery } from '../../queries/queries'
+import { UpdateOrderStatusMutation } from '../../mutations/mutations'
 
-export default class RestaurantOrders extends Component {
+class RestaurantOrders extends Component {
 
     constructor( props ) {
         super( props )
@@ -23,48 +24,50 @@ export default class RestaurantOrders extends Component {
     componentDidMount () {
         let id = localStorage.getItem( "id" )
         if ( id ) {
-            axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/getRestaurantOrders/" + id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            orders: res.data,
-                            filtered_orders: res.data
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        console.log( err.response.message )
-                        return
-                    }
-                    return
-                } )
+            this.props.client.query( {
+                query: GetOrdersForRestaurantQuery,
+                variables: {
+                    restaurant_id: parseInt( id )
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        orders: res.data.getOrdersForRestaurants,
+                        filtered_orders: res.data.getOrdersForRestaurants
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             console.log( "No Id found in local storage" )
         }
     }
 
     onStatusChange = ( item ) => {
-        // console.log( order_id )
         let order_id = item.target.value.split( "_" )[ 1 ]
         if ( item.target.value ) {
             if ( window.confirm( "Do you want to update status?" ) ) {
-                const data = {
-                    updated_status: item.target.value.split( "_" )[ 0 ]
-                }
-                axios.put( BACKEND_URL + ":" + BACKEND_PORT + "/updateOrderStatus/" + order_id, data )
-                    .then( ( res ) => {
-                        if ( res.status === 200 ) {
-                            window.location.reload()
-                        }
-                    } )
-                    .catch( ( err ) => {
-                        if ( err.response ) {
-                            console.log( err.response.message )
-                            return
-                        }
-                        return
-                    } )
+                this.props.UpdateOrderStatusMutation( {
+                    variables: {
+                        id: parseInt( order_id ),
+                        updated_status: item.target.value.split( "_" )[ 0 ]
+                    }
+                } ).then( res => {
+                    if ( res.data ) {
+                        window.location.reload();
+                    }
+                } ).catch( err => {
+                    if ( err.message ) {
+                        this.setState( {
+                            error: err.message.split( ":" )[ 1 ]
+                        } )
+                    }
+                } )
             }
         }
     }
@@ -112,6 +115,10 @@ export default class RestaurantOrders extends Component {
         if ( localStorage.getItem( "active" ) !== "restaurant" ) {
             redirectVar = <Redirect to="/login" />
             return redirectVar
+        }
+        let getDate = ( old ) => {
+            let date = new Date( parseInt( old ) )
+            return date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear()
         }
         return (
             <div >
@@ -190,7 +197,7 @@ export default class RestaurantOrders extends Component {
                                                             <span className="order-details">{ order.status }</span>
                                                         </div>
                                                         <div className="col-2">
-                                                            <span className="order-details">{ order.order_date.split( "T" )[ 0 ] }</span>
+                                                            <span className="order-details">{ getDate( order.order_date ) }</span>
                                                         </div>
                                                         <div className="col-2">
                                                             <span className="order-details">{ order.dish_name }</span>
@@ -218,3 +225,9 @@ export default class RestaurantOrders extends Component {
         )
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( GetOrdersForRestaurantQuery, { name: "GetOrdersForRestaurantQuery" } ),
+    graphql( UpdateOrderStatusMutation, { name: "UpdateOrderStatusMutation" } ),
+)( RestaurantOrders );

@@ -1,11 +1,10 @@
 import React, { Component } from 'react'
-import axios from 'axios';
 import { Redirect } from 'react-router';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import './UserDashboard.css'
 import Restaurant from './Restaurant'
-import Maps from './Maps'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { GetAllRestaurantQuery, SearchRestaurantQuery } from '../../queries/queries'
 
 class UserDashboard extends Component {
 
@@ -45,7 +44,6 @@ class UserDashboard extends Component {
 
     searchRestaurants = ( item ) => {
         item.preventDefault()
-        axios.defaults.withCredentials = true;
 
         if ( !this.state.selectedOption ) {
             this.setState( {
@@ -70,34 +68,35 @@ class UserDashboard extends Component {
                 filtered_latLongs: this.state.latLongs.filter( latlong => ids.includes( latlong.id ) )
             } )
         } else if ( this.state.search && this.state.selectedOption ) {
-            return axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/getrestaurantbysearch/" + this.state.selectedOption + "/" + this.state.search )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        let ids = []
-                        this.setState( {
-                            filtered_restaurants: this.state.restaurants.filter( ( restaurant ) => {
-                                if ( res.data.includes( restaurant.id ) ) {
-                                    ids.push( restaurant.id )
-                                    return true
-                                }
-                                return false
-                            } ),
-                            filtered_latLongs: this.state.latLongs.filter( latlong => ids.includes( latlong.id ) )
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            this.setState( {
-                                filtered_restaurants: [],
-                                filtered_latLongs: []
-                            } )
-                        } else if ( err.response.status === 500 ) {
-                            console.log( err.response.message )
-                        }
-                    }
-                } )
+            this.props.client.query( {
+                query: SearchRestaurantQuery,
+                variables: {
+                    category: this.state.selectedOption,
+                    searchTerm: this.state.search
+                }
+            } ).then( res => {
+                console.log( res.data )
+                if ( res.data ) {
+                    let ids = []
+                    this.setState( {
+                        filtered_restaurants: this.state.restaurants.filter( ( restaurant ) => {
+                            if ( res.data.searchRestaurant.ids.includes( restaurant.id ) ) {
+                                ids.push( restaurant.id )
+                                return true
+                            }
+                            return false
+                        } ),
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ],
+                        filtered_restaurants: [],
+                        filtered_latLongs: []
+                    } )
+                }
+            } )
         } else {
             this.setState( {
                 filtered_restaurants: this.state.restaurants,
@@ -136,29 +135,25 @@ class UserDashboard extends Component {
     }
 
     componentDidMount () {
-        axios.defaults.withCredentials = true;
         let id = localStorage.getItem( "id" )
         if ( id ) {
-            return axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/getAllRestaurants" )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            restaurants: res.data.restaurants,
-                            filtered_restaurants: res.data.restaurants,
-                            latLongs: res.data.latlongs,
-                            filtered_latLongs: res.data.latlongs
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        if ( err.response.status === 404 ) {
-                            console.log( err.response.message )
-                        } else if ( err.response.status === 500 ) {
-                            console.log( err.response.message )
-                        }
-                    }
-                } )
+            this.props.client.query( {
+                query: GetAllRestaurantQuery
+            } ).then( res => {
+                console.log( res.data )
+                if ( res.data ) {
+                    this.setState( {
+                        restaurants: res.data.getAllRestaurant,
+                        filtered_restaurants: res.data.getAllRestaurant
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             console.log( "No Id found in local storage" )
         }
@@ -236,13 +231,15 @@ class UserDashboard extends Component {
                                     : "No restaurants found" }
                             </div>
                         </div>
-                        <div className="col-3 maps-wrapper">
-                            <Maps latlongs={ this.state.filtered_latLongs } />
-                        </div>
                     </div>
                 </div>
             </div>
         )
     }
 }
-export default UserDashboard;
+
+export default compose(
+    withApollo,
+    graphql( GetAllRestaurantQuery, { name: "GetAllRestaurantQuery" } ),
+    graphql( SearchRestaurantQuery, { name: "SearchRestaurantQuery" } ),
+)( UserDashboard );

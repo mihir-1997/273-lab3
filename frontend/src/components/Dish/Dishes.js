@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
-import axios from 'axios'
 import Popup from 'reactjs-popup';
+import { graphql, compose, withApollo } from 'react-apollo';
 
 import Dish from "./Dish"
 import UpdateAddedDish from '../Dish/UpdateDish'
-import { BACKEND_URL, BACKEND_PORT } from '../Config/backendConfig'
+import { GetDishes } from '../../queries/queries'
 
-export default class Dishes extends Component {
+class Dishes extends Component {
 
     constructor( props ) {
         super( props )
@@ -22,23 +22,25 @@ export default class Dishes extends Component {
     }
 
     componentDidMount () {
-        axios.defaults.withCredentials = true;
         if ( this.state.id ) {
-            axios.get( BACKEND_URL + ":" + BACKEND_PORT + "/dishes/" + this.state.id )
-                .then( ( res ) => {
-                    if ( res.status === 200 ) {
-                        this.setState( {
-                            dishes: res.data
-                        } )
-                    }
-                } )
-                .catch( ( err ) => {
-                    if ( err.response ) {
-                        console.log( err.response.message )
-                        return
-                    }
-                    return
-                } )
+            this.props.client.query( {
+                query: GetDishes,
+                variables: {
+                    restaurant_id: this.state.id
+                }
+            } ).then( res => {
+                if ( res.data ) {
+                    this.setState( {
+                        dishes: res.data.getDishes
+                    } )
+                }
+            } ).catch( err => {
+                if ( err.message ) {
+                    this.setState( {
+                        error: err.message.split( ":" )[ 1 ]
+                    } )
+                }
+            } )
         } else {
             console.log( "No Id found in local storage" )
         }
@@ -88,3 +90,9 @@ export default class Dishes extends Component {
         // marginTop: "40%"
     }
 }
+
+export default compose(
+    withApollo,
+    graphql( GetDishes, { name: "GetDishes" } ),
+    // graphql( GetAvgRatingsQuery, { name: "GetAvgRatingsQuery" } ),
+)( Dishes );
