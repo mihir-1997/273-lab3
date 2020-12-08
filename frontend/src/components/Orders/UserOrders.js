@@ -163,14 +163,17 @@ class Orders extends Component {
                         </div>
                         <div className="col-10">
                             <h2 className="order-heading">Orders</h2>
-                            <div className="">
-                                <form>
-                                    <select name="sortOption" id="sortOptions" className="form-control sortOptions" onChange={ this.onChange }>
-                                        <option name="sort" value="">Sort By Date...</option>
-                                        <option name="sort" value="ascending">Ascending</option>
-                                        <option name="sort" value="descending">Descending</option>
-                                    </select>
-                                </form>
+                            <div className="row">
+                                <div className="col-9"></div>
+                                <div className="col-3">
+                                    <form>
+                                        <select name="sortOption" id="sortOptions" className="form-control sortOptions" onChange={ this.onChange }>
+                                            <option name="sort" value="">Sort By Date...</option>
+                                            <option name="sort" value="ascending">Ascending</option>
+                                            <option name="sort" value="descending">Descending</option>
+                                        </select>
+                                    </form>
+                                </div>
                             </div>
                             {
                                 this.state.filtered_orders ?

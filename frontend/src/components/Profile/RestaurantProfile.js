@@ -232,12 +232,12 @@ class RestaurantProfile extends Component {
                         <div className="row h-45">
                             {/* <h2>Pictures</h2> */ }
                             <div className="col">
-                                <div className="row">
+                                {/* <div className="row">
                                     <div className="text-center">
                                         <input type="file" id="restaurantPictures" name="restaurantpictures" title="" accept="image/*" onChange={ this.onChangePictures } multiple hidden />
                                         <button type="button" className="btn red-button" onClick={ this.addFiles }>Add Picture</button>
                                     </div>
-                                </div>
+                                </div> */}
                                 <div className="row picture-scrolling-wrapper">
                                     <div className="picture-scrolling">
                                         { this.state.pictures && this.state.pictures.map( picture => {
